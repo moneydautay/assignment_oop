@@ -1,4 +1,4 @@
-package Path_3_1;
+package Part_1;
 
 import java.util.ArrayList;
 import java.util.List;
