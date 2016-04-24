@@ -1,22 +1,18 @@
 package Part_1;
 
 import java.awt.*;
+import java.awt.Label;
 import java.awt.event.*;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import javafx.stage.FileChooser;
+import machine.Transition;
 
 public class GraphFrame extends JFrame{
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 3305426536904044526L;
 	public static final String MENU_FILE = "File";
 	public static final String MENU_FILE_NEW = "New";
@@ -128,6 +124,17 @@ public class GraphFrame extends JFrame{
 				}
 			});
 
+			
+			JPanel bottom = new JPanel();
+			// add tool bar
+			layout = new GridLayout(1, 5);
+			bottom.setLayout(layout);
+			bottom.add(new Label("Color"));
+			bottom.add(new Label("Color"));
+			bottom.add(new Label("Color"));
+			bottom.add(new Label("Color"));
+			
+			
 			leftPN.add(pointButton);
 			leftPN.add(cirButton);
 			leftPN.add(lineButton);
@@ -135,6 +142,7 @@ public class GraphFrame extends JFrame{
 			leftPN.add(delButton);
 			add(leftPN);
 			add(scrollPane, BorderLayout.EAST);
+			add(bottom, BorderLayout.SOUTH);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -184,7 +192,9 @@ public class GraphFrame extends JFrame{
 					file.setStartState( com.getStartState());
 					file.setEndState( com.getEndState());
 					if(file.exportXml(PATH_FILE)){
-						System.out.println("Export file success");
+						JOptionPane.showMessageDialog(GraphFrame.this, "Export message", "Export file success", JOptionPane.INFORMATION_MESSAGE);
+					}else{
+						JOptionPane.showMessageDialog(GraphFrame.this, "Export message", "Export file not success", JOptionPane.ERROR_MESSAGE);
 					}
 				}
 			}
@@ -193,20 +203,31 @@ public class GraphFrame extends JFrame{
 		// button import 
 		createMenuItem(menu, GraphFrame.MENU_IMPORT, new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				file = new FileXML();
-				if(file.importXML(PATH_FILE)){
-					
-					com.cleanGraph();
-					com.setStartState(file.getStartState());
-					com.setEndState(file.getEndState());
-					System.out.println(file.getListStates().size());
-					com.setListPoints(file.getListStates());
-					com.setListLine(file.getListEdges());
-					com.repaint();
-					System.out.println("Import file success");
+				fileChoise = new JFileChooser(PATH_FILE);
+
+				FileNameExtensionFilter xmlFilter = new FileNameExtensionFilter("*.xml", "xml");
+				// add filters
+				fileChoise.addChoosableFileFilter(xmlFilter);
+				fileChoise.setFileFilter(xmlFilter);
+
+				if (fileChoise.showOpenDialog(GraphFrame.this) == JFileChooser.APPROVE_OPTION) {
+
+					file = new FileXML();
+					if (file.importXML(fileChoise.getSelectedFile().toString())) {
+
+						com.cleanGraph();
+						com.setStartState(file.getStartState());
+						com.setEndState(file.getEndState());
+						com.setListPoints(file.getListStates());
+						com.setListLine(file.getListEdges());
+						com.setTransition(file.getTransition());
+						
+						com.repaint();
+					}else{
+						JOptionPane.showMessageDialog(GraphFrame.this, "Import message", "Import file not success", JOptionPane.ERROR_MESSAGE);
+					}
 				}
-				
-				
+
 			}
 		});
 

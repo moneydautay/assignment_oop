@@ -11,20 +11,21 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.List;
+
 import java.awt.Shape;
 import java.awt.Stroke;
 
-public class Edge {
+public class Edge{
 	
 	//source and destination is index of shape in list shape
 	private String type;
-	private String label;
 	private float dashes[] = { 5f, 5f };
-	private int source;
-	private int destination;
+	private int sourceParent;
+	private int destinationParent;
 	private boolean movable;
 	private Point2D ctrl1;
 	private Point2D ctrl2;
+	private String label;
 	
 	Edge(String type){
 		this.type = type;
@@ -33,8 +34,8 @@ public class Edge {
 	}
 	
 	Edge(int source, int destination, String label, String type){
-		this.source = source;
-		this.destination = destination; 
+		this.sourceParent = source;
+		this.destinationParent = destination; 
 		this.label = label;
 		this.type = type;
 		ctrl1 = new Point2D.Float();
@@ -42,8 +43,8 @@ public class Edge {
 	}
 	
 	Edge(int source, int destination, String label, String type, Point2D ctrl1,  Point2D ctrl2){
-		this.source = source;
-		this.destination = destination; 
+		this.sourceParent = source;
+		this.destinationParent = destination; 
 		this.label = label;
 		this.type = type;
 		this.ctrl1 = ctrl1;
@@ -67,8 +68,8 @@ public class Edge {
 	}
 	
 	Edge(int source, int destination, boolean movable){
-		this.source = source;
-		this.destination = destination; 
+		this.sourceParent = source;
+		this.destinationParent = destination; 
 		this.movable = movable;
 	}
 	
@@ -76,20 +77,20 @@ public class Edge {
 		return movable;
 	}
 	
-	public int getSource() {
-		return source;
+	public int getsourceParent() {
+		return sourceParent;
 	}
 
-	public void setSource(int source) {
-		this.source = source;
+	public void setsourceParent(int source) {
+		this.sourceParent = source;
 	}
 
-	public int getDestination() {
-		return destination;
+	public int getdestinationParent() {
+		return destinationParent;
 	}
 
-	public void setDestination(int destination) {
-		this.destination = destination;
+	public void setdestinationParent(int destination) {
+		this.destinationParent = destination;
 	}
 
 	public Point2D getCtrl1() {
@@ -144,8 +145,8 @@ public class Edge {
 	}
 	
 	public void drawEdge(Graphics2D g2d, List<Part_1.Shape> states, Label labelFont, boolean selected){
-		Point2D source = states.get(this.source).getPoint();
-		Point2D des = states.get(this.destination).getPoint();
+		Point2D source = states.get(this.sourceParent).getPoint();
+		Point2D des = states.get(this.destinationParent).getPoint();
 		Point2D mid2SourceDes = midpoint(source, des);
 
 		ctrl1  = ctrl1.equals(new Point2D.Float())? new Point2D.Float((int)midpoint(source, mid2SourceDes).getX(), (int)midpoint(source, mid2SourceDes).getY()): ctrl1;
@@ -160,21 +161,20 @@ public class Edge {
 		drawEdge(g2d, source, des, null ,selected);
 	}
 	public void drawEdge(Graphics2D g2d, Point2D source, Point2D des, Label labelFont, boolean selected){
-					
-		Point2D mid2SourceDes = source;
+			
+		Point2D mid2SourceDes = midpoint(source, des);
 		Point2D mid2Ctr = des;
 			
-		g2d.setColor(Color.BLACK);
 		Point2D mid;
 		if (type.equals("art")) {
 			
-			mid2Ctr = midpoint(ctrl1, ctrl2);
+			/*mid2Ctr = midpoint(ctrl1, ctrl2);
 			mid2SourceDes = midpoint(midpoint(source, des), mid2Ctr);
 			
 			mid = midpoint(source, ctrl1);
 			g2d.draw(createArrowShape(source, mid, type));
-			mid = midpoint(ctrl2, des);
-			g2d.draw(createArrowShape(mid, des, type));
+			mid = midpoint(ctrl2, des);*/
+			//g2d.draw(createCubicCurve2D(source, null, null, des));
 
 		} else {
 			mid = midpoint(source, des);
@@ -187,18 +187,22 @@ public class Edge {
 			g2d.draw(new Line2D.Float(source, des));
 		
 		if(labelFont != null){
+			Color defaultColor = g2d.getColor();
+			g2d.setColor(Color.BLUE);
 			labelFont.setPoint(mid2SourceDes);
-			labelFont.drawLabel(label, g2d);
+			labelFont.drawLabel(label.toString(), g2d);
+			g2d.setColor(defaultColor);
 		}
+		
 	}
 	
 	public void drawLine(Point2D source, Point2D des, Graphics2D g2d){
+		
 		g2d.draw(new Line2D.Float(source, des));
 	}
 	
 	private void drawCubiCurve(Graphics2D g2d,Point2D source, Point2D des, boolean selected) {
 
-		g2d.setColor(Color.BLACK);
 		if (selected) {
 			Stroke currentStroke = g2d.getStroke();
 			g2d.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 10f, dashes, 0f));
@@ -223,9 +227,21 @@ public class Edge {
 		}
 	}
 	
+	private CubicCurve2D createCubicCurve2D(Point2D startPoint, Point2D startPoint2, Point2D endPoint2, Point2D endPoint) {
+		final CubicCurve2D arrowLinkCurve = new CubicCurve2D.Double();
+		if (startPoint != null && endPoint != null) {
+			arrowLinkCurve.setCurve(startPoint, startPoint2, endPoint2, endPoint);
+		} else if (startPoint != null) {
+			arrowLinkCurve.setCurve(startPoint, startPoint2, startPoint, startPoint2);
+		} else if (endPoint != null) {
+			arrowLinkCurve.setCurve(endPoint, endPoint2, endPoint, endPoint2);
+		}
+		return arrowLinkCurve;
+	}
+	
 	public void selected(Graphics2D g2d, List<Part_1.Shape> states){
-		Point2D source = states.get(this.source).getPoint();
-		Point2D des = states.get(this.destination).getPoint();
+		Point2D source = states.get(this.sourceParent).getPoint();
+		Point2D des = states.get(this.destinationParent).getPoint();
 		g2d.setColor(Color.YELLOW);
 		Ellipse2D cirSource = new Ellipse2D.Double(source.getX() - 5, source.getY() - 5, 10, 10);
 		g2d.fill(cirSource);
