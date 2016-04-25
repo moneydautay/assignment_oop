@@ -1,15 +1,12 @@
 package Part_1;
 
 import java.awt.*;
-import java.awt.Label;
 import java.awt.event.*;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
-import machine.Transition;
 
 public class GraphFrame extends JFrame{
 
@@ -31,6 +28,7 @@ public class GraphFrame extends JFrame{
 
 	private int size = 800;
 	private GraphComponent com = new GraphComponent(size);
+	private AnnotateComponent anno = new AnnotateComponent(new Dimension(700, 30));
 	private FrameController controller;
 	private FileXML file;
 	private JFileChooser fileChoise;
@@ -39,7 +37,6 @@ public class GraphFrame extends JFrame{
 		super(title);
 		try {
 			this.controller = controller;
-
 			// set resizable is false
 			setResizable(false);
 			setLayout(new BorderLayout());
@@ -51,11 +48,11 @@ public class GraphFrame extends JFrame{
 			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 			scrollPane.setViewportView(com);
-
+			
 			JPanel leftPN = new JPanel();
 			
 			// add tool bar
-			GridLayout layout = new GridLayout(5, 1);
+			GridLayout layout = new GridLayout(8, 1);
 			leftPN.setLayout(layout);
 	
 			Image img = ImageIO.read(getClass().getResource(PATH_IMAGE+PATH_IMAGE_POINTER));
@@ -67,8 +64,8 @@ public class GraphFrame extends JFrame{
 			JButton lineButton = new JButton(new ImageIcon(img));
 			img = ImageIO.read(getClass().getResource(PATH_IMAGE+PATH_IMAGE_ARC));
 			JButton artButton = new JButton(new ImageIcon(img));
-			JButton delButton = new JButton("Rec Words");
-			
+			JButton recButton = new JButton("Rec Words");
+
 			Color defaultColorButton = pointButton.getBackground();
 			
 			
@@ -89,6 +86,7 @@ public class GraphFrame extends JFrame{
 					artButton.setBackground(defaultColorButton);
 					pointButton.setBackground(defaultColorButton);
 					cirButton.setBackground(DEFAULT_COLOR_BUTTON);
+					com.setAltPressed(false);
 					com.setCurrentButton("state");
 				}
 			});
@@ -101,6 +99,7 @@ public class GraphFrame extends JFrame{
 					pointButton.setBackground(defaultColorButton);
 					cirButton.setBackground(defaultColorButton);
 					lineButton.setBackground(DEFAULT_COLOR_BUTTON);
+					com.setAltPressed(true);
 					com.setCurrentButton("line");
 				}
 			});
@@ -113,11 +112,12 @@ public class GraphFrame extends JFrame{
 					cirButton.setBackground(defaultColorButton);
 					lineButton.setBackground(defaultColorButton);
 					artButton.setBackground(DEFAULT_COLOR_BUTTON);
+					com.setAltPressed(true);
 					com.setCurrentButton("art");
 				}
 			});
 			
-			delButton.addActionListener(new ActionListener() {
+			recButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					com.recognizeWords();
 
@@ -126,20 +126,15 @@ public class GraphFrame extends JFrame{
 
 			
 			JPanel bottom = new JPanel();
-			// add tool bar
-			layout = new GridLayout(1, 5);
-			bottom.setLayout(layout);
-			bottom.add(new Label("Color"));
-			bottom.add(new Label("Color"));
-			bottom.add(new Label("Color"));
-			bottom.add(new Label("Color"));
-			
+	
+			bottom.add(anno);
+
 			
 			leftPN.add(pointButton);
 			leftPN.add(cirButton);
 			leftPN.add(lineButton);
 			leftPN.add(artButton);
-			leftPN.add(delButton);
+			leftPN.add(recButton);
 			add(leftPN);
 			add(scrollPane, BorderLayout.EAST);
 			add(bottom, BorderLayout.SOUTH);

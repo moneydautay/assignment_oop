@@ -149,15 +149,15 @@ public class Edge{
 		Point2D des = states.get(this.destinationParent).getPoint();
 		Point2D mid2SourceDes = midpoint(source, des);
 
-		ctrl1  = ctrl1.equals(new Point2D.Float())? new Point2D.Float((int)midpoint(source, mid2SourceDes).getX(), (int)midpoint(source, mid2SourceDes).getY()): ctrl1;
-		ctrl2  = ctrl2.equals(new Point2D.Float())? new Point2D.Float((int)midpoint(mid2SourceDes, des).getX(), (int)midpoint(mid2SourceDes, des).getY()): ctrl2;
+		ctrl1  = (ctrl1 == null)? new Point2D.Float((int)midpoint(source, mid2SourceDes).getX(), (int)midpoint(source, mid2SourceDes).getY()): ctrl1;
+		ctrl2  = (ctrl2  == null)? new Point2D.Float((int)midpoint(mid2SourceDes, des).getX(), (int)midpoint(mid2SourceDes, des).getY()): ctrl2;
 		drawEdge(g2d, source, des, labelFont , selected);
 	}
 	
-	public void drawEdgeImp(Graphics2D g2d, Point2D source, Point2D des, boolean selected){
+	public void drawEdgeImp(Graphics2D g2d, Point2D source, Point2D ctrl1, Point2D ctrl2, Point2D des, boolean selected){
 		Point2D mid = midpoint(source, des);
-		ctrl1  =  midpoint(source, mid);
-		ctrl2 =   midpoint(mid, des);
+		this.ctrl1  =  (ctrl1 == null)? midpoint(source, mid): ctrl1;
+		this.ctrl2 =   (ctrl2 == null)? midpoint(mid, des) : ctrl2;
 		drawEdge(g2d, source, des, null ,selected);
 	}
 	public void drawEdge(Graphics2D g2d, Point2D source, Point2D des, Label labelFont, boolean selected){
@@ -168,13 +168,13 @@ public class Edge{
 		Point2D mid;
 		if (type.equals("art")) {
 			
-			/*mid2Ctr = midpoint(ctrl1, ctrl2);
+			mid2Ctr = midpoint(ctrl1, ctrl2);
 			mid2SourceDes = midpoint(midpoint(source, des), mid2Ctr);
+			Point2D midCtrl1 = midpoint(ctrl1, mid2Ctr);
+			Point2D midCtrl2 = midpoint(ctrl2, mid2Ctr);
 			
-			mid = midpoint(source, ctrl1);
-			g2d.draw(createArrowShape(source, mid, type));
-			mid = midpoint(ctrl2, des);*/
-			//g2d.draw(createCubicCurve2D(source, null, null, des));
+			g2d.draw(createArrowShape(source, midCtrl1, type));
+			g2d.draw(createArrowShape(midCtrl2, des, type));
 
 		} else {
 			mid = midpoint(source, des);
@@ -209,13 +209,18 @@ public class Edge{
 			g2d.draw(new Line2D.Float(source, des));
 			g2d.draw(new Line2D.Float(source, ctrl1));
 			g2d.draw(new Line2D.Float(des, ctrl2));
+			/*Point2D mid = midpoint(ctrl1, ctrl2);
+			Point2D midCtrl1 = midpoint(ctrl1, mid);
+			Point2D midCtrl2 = midpoint(ctrl2, mid);
+			g2d.draw(new Line2D.Float(source, midCtrl1));
+			g2d.draw(new Line2D.Float(des, midCtrl2));*/
 
 			g2d.setStroke(currentStroke);
 		}
 
 		CubicCurve2D cubi = new CubicCurve2D.Float((int) source.getX(), (int) source.getY(), (int) ctrl1.getX(),
 				(int) ctrl1.getY(), (int) ctrl2.getX(), (int) ctrl2.getY(), (int) des.getX(), (int) des.getY());
-
+		
 		g2d.draw(cubi);
 
 		if (selected) {
@@ -227,18 +232,7 @@ public class Edge{
 		}
 	}
 	
-	private CubicCurve2D createCubicCurve2D(Point2D startPoint, Point2D startPoint2, Point2D endPoint2, Point2D endPoint) {
-		final CubicCurve2D arrowLinkCurve = new CubicCurve2D.Double();
-		if (startPoint != null && endPoint != null) {
-			arrowLinkCurve.setCurve(startPoint, startPoint2, endPoint2, endPoint);
-		} else if (startPoint != null) {
-			arrowLinkCurve.setCurve(startPoint, startPoint2, startPoint, startPoint2);
-		} else if (endPoint != null) {
-			arrowLinkCurve.setCurve(endPoint, endPoint2, endPoint, endPoint2);
-		}
-		return arrowLinkCurve;
-	}
-	
+		
 	public void selected(Graphics2D g2d, List<Part_1.Shape> states){
 		Point2D source = states.get(this.sourceParent).getPoint();
 		Point2D des = states.get(this.destinationParent).getPoint();

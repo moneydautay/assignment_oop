@@ -28,6 +28,7 @@ import machine.TransitionImpl;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 
 import javax.swing.JComponent;
@@ -41,18 +42,15 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 	private static final Font FONT = new Font("Serif", Font.BOLD, 20);
 	private static Label labelFont = new Label(FONT);
 	private static final Color DELINE_COLOR_AUTOMATA = Color.GREEN;
-	private static final Color DESTATE_COLOR_AUTOMATA = Color.DARK_GRAY;
 	private List<Shape> listPoints = new ArrayList<Shape>();
 	private List<Edge> listLine = new ArrayList<Edge>();
 	private ArrayList<Shape> tempState = new ArrayList<Shape>();
 	private List<Integer> dectectAutomata = new ArrayList<Integer>();
+	private int startState = 0;
+	private List<Integer> endState;
 	private static int radius = 30;
 	private int dx = 0;
 	private int dy = 0;
-	private int startState = 0;
-	private List<Integer> endState;
-
-	// index of circle have been clicked or dragged
 	private int currently = -1;
 	private int currentLine = -1;
 	private int currentlyMove = -1;
@@ -63,7 +61,10 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 	private int currentCtrl = -1;
 	private boolean movableCtrl = false;
 	private boolean selectedCubi = false;
+	private Point2D ctrlPoint1 = null;
+	private Point2D ctrlPoint2 = null;
 	
+	private int countSpace = 0;
 	
 	private Point2D currentPointState;
 
@@ -91,9 +92,7 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 		
 		Graphics2D g2d = (Graphics2D) g;
 		Color defaultColor = g2d.getColor();
-		
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
 		// draw line
 		int index = 0;
 		for (Edge edge: listLine) {
@@ -120,6 +119,9 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 			if (endState.contains(labelCount))
 				g2d.setColor(Color.BLACK);
 			
+			if (labelCount == startState && endState.contains(labelCount))
+				g2d.setColor(Color.ORANGE);
+			
 			/*if(dectectAutomata.size() > 0){
 				for(Integer i : dectectAutomata)
 					if(listLine.get(i).getsourceParent() == labelCount || listLine.get(i).getdestinationParent() == labelCount)
@@ -135,7 +137,7 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 		if (currently > -1) {
 			if ((altPressed)) {
 				Edge edge = new Edge(currentButton);
-				edge.drawEdgeImp(g2d, sourcePoint,desPoint , true);
+				edge.drawEdgeImp(g2d, sourcePoint,ctrlPoint1, ctrlPoint2,desPoint , true);
 			}
 		}
 		
@@ -150,6 +152,10 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 
 		if(currentLine > -1)
 			listLine.get(currentLine).selected(g2d, listPoints);
+		
+		//clear dectectAutomata after repaint
+		if(dectectAutomata.size() > 0)
+			dectectAutomata.clear();
 	}
     
 	public boolean checkPointIsCircle(MouseEvent e) {
@@ -229,7 +235,7 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 		currently = -1;
 		currentLine = -1;
 
-		if (checkPointIsCircle(e)) {
+		if (checkPointIsCircle(e) || altPressed) {
 			dx = e.getX() - (int) listPoints.get(currently).getPoint().getX();
 			dy = e.getY() - (int) listPoints.get(currently).getPoint().getY();
 			sourcePoint = e.getPoint();
@@ -254,7 +260,10 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 
 		if (e.getButton() == MouseEvent.BUTTON3) {
 			if (currently > -1 || currentLine > -1) showPopup(e);
-			else currentButton = null;
+			else{ 
+				currentButton = null;
+				repaint();
+			}
 			
 		}
 	}
@@ -280,7 +289,7 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 						addShape(x, y);
 						currentlyMove = listPoints.size() - 1;
 					}
-					listLine.add(new Edge(currently, currentlyMove, label, currentButton));
+					listLine.add(new Edge(currently, currentlyMove, label, currentButton, ctrlPoint1, ctrlPoint2));
 					transitions.add(new TransitionImpl<String>(
 										listPoints.get(currently).getState(), 
 										listPoints.get(currentlyMove).getState(), label)
@@ -291,6 +300,8 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 					currentLine = listLine.size() - 1;
 				}
 				currentButton = null;
+				ctrlPoint1 = ctrlPoint2 = null;
+				countSpace = 0;
 				selectedCubi = true;
 				repaint();
 			}
@@ -305,14 +316,12 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		altPressed = false;
 		int x = e.getX();
 		int y = e.getY();
 
 		if (currently > -1) {
 			if (currentButton == "line" || currentButton == "art") {
 				desPoint = e.getPoint();
-				altPressed = true;
 			} else {
 				listPoints.get(currently).getPoint().setLocation(x - dx, y - dy);
 			}
@@ -331,15 +340,29 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 
 		if (e.isAltDown()) {
 			altPressed = true;
-			if (e.getKeyCode() == KeyEvent.VK_SPACE)
-				tempState.add(new Shape("circle", desPoint, 5));
+			currentButton = "line";
+		}
+		
+		if(altPressed){
+			if (e.getKeyCode() == KeyEvent.VK_SPACE){
+				currentButton = "art";
+				if(countSpace == 0){
+					ctrlPoint1 = new Point2D.Float((int)desPoint.getX(), (int)desPoint.getY());
+					ctrlPoint2 = new Point2D.Float((int)desPoint.getX(), (int)desPoint.getY());
+					countSpace++;
+				}else if(countSpace == 1){
+					ctrlPoint2 = new Point2D.Float((int)desPoint.getX(), (int)desPoint.getY());
+					countSpace++;
+				}
+				
+			}
 		}
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
 		if (!e.isAltDown()) {
-			altPressed = false;
+			//altPressed = false;
 		}
 	}
 	
@@ -398,11 +421,7 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 					if (listPoints.get(currently).isHaveLine()) {
 						for(int i =  listLine.size() - 1; i >= 0; i--){
 							
-							if(listLine.get(i).getsourceParent() == currently || listLine.get(i).getdestinationParent() == currently){
-								System.out.println("currently "+currently);
-								System.out.println(listLine.get(i).getsourceParent());
-								System.out.println(listLine.get(i).getdestinationParent());
-							
+							if(listLine.get(i).getsourceParent() == currently || listLine.get(i).getdestinationParent() == currently){							
 								listLine.remove(i);
 								transitions.remove(i);
 							}
@@ -430,7 +449,7 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 		if (currentLine == -1) {
 									
 			// New File menu item
-			menuItem = new JMenuItem("Start");
+			menuItem = new JMenuItem("Initial State");
 			menuItem.setMnemonic(KeyEvent.VK_F);
 			menuItem.addActionListener(new ActionListener() {
 
@@ -446,7 +465,7 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 			popup.add(menuItem);
 
 			// New File menu item
-			menuItem = new JMenuItem("End");
+			menuItem = new JMenuItem("Terminal State");
 			menuItem.setMnemonic(KeyEvent.VK_F);
 			menuItem.addActionListener(new ActionListener() {
 
@@ -493,6 +512,12 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 
 	public void recognizeWords() {
 		dectectAutomata.clear();
+		
+		if(endState.size() == 0){
+			JOptionPane.showMessageDialog(this, "This automata has not terminal state. Please using right mouse to set terminal state.", "Error Automata", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		
 		String words = InputRecognizedWord();
 		if(words != ""){
 			String[] word = words.split("");
@@ -551,7 +576,7 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 	}
 	
 	private String InputRecognizedWord(){
-		String words = InputLabel("", "Enter regconized words",  "Enter regconized words", 100);
+		String words = InputWord("", "Enter regconized words",  "Enter regconized words", 100);
 		if(words != "")
 			return words;
 		return "";
@@ -657,6 +682,10 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 		}
 	}
 	
+	public void setAltPressed(boolean altPressed) {
+		this.altPressed = altPressed;
+	}
+
 	public void mouseClicked(MouseEvent e) {
 	}
 
