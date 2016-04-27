@@ -46,7 +46,7 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 	private List<Edge> listLine = new ArrayList<Edge>();
 	private ArrayList<Shape> tempState = new ArrayList<Shape>();
 	private List<Integer> dectectAutomata = new ArrayList<Integer>();
-	private int startState = 0;
+	private int startState = -1;
 	private List<Integer> endState;
 	private static int radius = 30;
 	private int dx = 0;
@@ -121,13 +121,7 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 			
 			if (labelCount == startState && endState.contains(labelCount))
 				g2d.setColor(Color.ORANGE);
-			
-			/*if(dectectAutomata.size() > 0){
-				for(Integer i : dectectAutomata)
-					if(listLine.get(i).getsourceParent() == labelCount || listLine.get(i).getdestinationParent() == labelCount)
-						g2d.setColor(DESTATE_COLOR_AUTOMATA);
-			}*/
-			
+					
 			p.drawState(g2d, labelNumber, labelFont);
 			g2d.setColor(defaultColor);
 			labelCount++;
@@ -143,11 +137,9 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 		
 		if(currentButton == "state"){
 			String label = listPoints.size()+"";
-			
 			g2d.setColor(Color.BLUE);
 			Shape shape = new Shape(currentButton, currentPointState, radius);
 			shape.drawState(g2d, label, labelFont);
-			
 		}
 
 		if(currentLine > -1)
@@ -211,7 +203,7 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 	private void drawShape(int x, int y) {
 		addShape(x, y);
 		currently = listPoints.size() - 1;
-		boolean st = (currently == startState)?true : false;
+		boolean st = (currently == startState)? true : false;
 		listPoints.get(currently).setState(new StateImpl(st, false));
 	}
 
@@ -354,7 +346,6 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 					ctrlPoint2 = new Point2D.Float((int)desPoint.getX(), (int)desPoint.getY());
 					countSpace++;
 				}
-				
 			}
 		}
 	}
@@ -408,8 +399,6 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 		menuItem.getAccessibleContext().setAccessibleDescription("Delete");
 		menuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// listLine.get(currentLine).removeEdge(currentJoinPoint);
-				// repaint();
 				if (currentLine > -1) {
 					listPoints.get(listLine.get(currentLine).getsourceParent()).setHaveLine(false);
 					listPoints.get(listLine.get(currentLine).getsourceParent()).setLineIndex(-1);
@@ -599,13 +588,13 @@ public class GraphComponent extends JComponent implements MouseInputListener, Ke
 	private String InputLabel(String lb, Object message, String title, int thresshold) {
 		String label = InputWord(lb, message, title, thresshold);
 		if (label != "") {
-			for (Edge edge : listLine) {
+			/*for (Edge edge : listLine) {
 				if (edge.getsourceParent() == currently && edge.getLabel().equals(label)) {
 					JOptionPane.showMessageDialog(this, "Label " + label + " existed on this edge.", "Error",
 							JOptionPane.ERROR_MESSAGE);
 					label = InputLabel(lb, message, title, thresshold);
 				}
-			}
+			}*/
 			return label;
 		}
 		return "";
