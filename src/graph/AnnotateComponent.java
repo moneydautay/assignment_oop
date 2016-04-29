@@ -1,8 +1,7 @@
-package Part_1;
+package graph;
 import java.awt.*;
 
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 
 public class AnnotateComponent extends JComponent {
 	
@@ -42,15 +41,5 @@ public class AnnotateComponent extends JComponent {
 		g2d.drawString("Initial & Terminal State", 490, 20);
 
 		g2d.dispose();
-	}
-
-	public static void main(String[] args){
-		JFrame jFrame = new JFrame();
-		jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		jFrame.setSize(300, 300);
-		jFrame.add(new AnnotateComponent(new Dimension(500, 50)));
-		jFrame.setVisible(true);
-		
-	}
-	
+	}	
 }

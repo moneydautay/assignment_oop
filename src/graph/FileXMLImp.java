@@ -1,4 +1,4 @@
-package Part_1;
+package graph;
 
 import java.awt.geom.Point2D;
 import java.io.File;
@@ -21,28 +21,18 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import core.FileXML;
 import machine.StateImpl;
 import machine.Transition;
 import machine.TransitionImpl;
 
-public class FileXML {
+public class FileXMLImp implements FileXML{
 	
 	private File inputFile;
-	private List<Shape> listStates;
-	private List<Edge> listEdges;
-	private ArrayList<Transition<String>> transitions = new ArrayList<Transition<String>>();
-	private Integer startState;
-	private List<Integer> endState;
+	private GraphComponent com;
 	
-	public ArrayList<Transition<String>> getTransition() {
-		return transitions;
-	}
-
-	public FileXML(){
-		listStates = new ArrayList<Shape>();
-		listEdges  = new ArrayList<Edge>();
-		startState = -1;
-		endState  = new ArrayList<Integer>();
+	public FileXMLImp(GraphComponent com){
+		this.com = com;
 	}
 	
 	public File getInputFile() {
@@ -53,39 +43,7 @@ public class FileXML {
 		this.inputFile = inputFile;
 	}
 
-	public List<Shape> getListStates() {
-		return listStates;
-	}
-
-	public void setListStates(List<Shape> listStates) {
-		this.listStates = listStates;
-	}
-
-	public List<Edge> getListEdges() {
-		return listEdges;
-	}
-
-	public void setListEdges(List<Edge> listEdges) {
-		this.listEdges = listEdges;
-	}
-
-	public Integer getStartState() {
-		return startState;
-	}
-
-	public void setStartState(Integer startState) {
-		this.startState = startState;
-	}
-
-	public List<Integer> getEndState() {
-		return endState;
-	}
-
-	public void setEndState(List<Integer> endState) {
-		this.endState = endState;
-	}
-
-	public boolean exportXml(String path_file){
+	public boolean exportXML(String path_file){
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -97,14 +55,14 @@ public class FileXML {
 			
 			// Start State element
 			Element startstate = doc.createElement("startstate");
-			startstate.appendChild(doc.createTextNode(startState+""));
+			startstate.appendChild(doc.createTextNode(com.getStartState()+""));
 			rootElement.appendChild(startstate);
 			
 			// end State element
 			Element endstate = doc.createElement("endstates");
 			rootElement.appendChild(endstate);
 			Element valueET;
-			for (Integer es : endState) {
+			for (Integer es : com.getEndState()) {
 				
 				valueET = doc.createElement("endstate");
 				valueET.appendChild(doc.createTextNode(es.toString()));
@@ -123,7 +81,7 @@ public class FileXML {
 			//int radius;
 			// setting attribute to element
 			
-			for (Shape point : listStates) {
+			for (Shape point : com.getListPoints()) {
 				
 				state = doc.createElement("state");
 				states.appendChild(state);
@@ -161,7 +119,7 @@ public class FileXML {
 			Element edges = doc.createElement("edges");
 			rootElement.appendChild(edges);
 			Element edge;
-			for (Edge line : listEdges) {
+			for (Edge line : com.getListLine()) {
 				edge = doc.createElement("edge");
 				edges.appendChild(edge);
 			
@@ -225,7 +183,16 @@ public class FileXML {
 	}
 	
 	public boolean importXML(String path_flie){
+			
 		try {
+			List<Shape> listStates = new ArrayList<Shape>();
+			List<Edge> listEdges = new ArrayList<Edge>();
+			ArrayList<Transition<String>> transitions = new ArrayList<Transition<String>>();
+			Integer startState;
+			List<Integer> endState = new ArrayList<Integer>();
+			//Clear current graph
+			com.cleanGraph();
+			
 			inputFile = new File(path_flie);
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -238,8 +205,7 @@ public class FileXML {
 			NodeList endStates = doc.getElementsByTagName("endstate");
 			for (int i = 0 ; i < endStates.getLength(); i++) {
 				Node nNode = endStates.item(i);
-				this.endState.add(Integer.parseInt(nNode.getTextContent()));
-				
+				endState.add(Integer.parseInt(nNode.getTextContent()));
 			}
 			
 			NodeList states = doc.getElementsByTagName("state");
@@ -277,10 +243,15 @@ public class FileXML {
 					 int x2 = Integer.parseInt(eElement.getElementsByTagName("ctrl2").item(0).getFirstChild().getTextContent());
 					 int y2 = Integer.parseInt(eElement.getElementsByTagName("ctrl2").item(0).getFirstChild().getNextSibling().getTextContent());
 					 Edge ed = new Edge(source, des, label, type, new Point2D.Float(x1, y1),  new Point2D.Float(x2, y2));
-					 this.listEdges.add(ed);
-					 this.transitions.add(new TransitionImpl<String>(listStates.get(source).getState(), listStates.get(des).getState(), label));
+					 listEdges.add(ed);
+					 transitions.add(new TransitionImpl<String>(listStates.get(source).getState(), listStates.get(des).getState(), label));
 				}
 			}
+			com.setStartState(startState);
+			com.setEndState(endState);
+			com.setListPoints(listStates);
+			com.setListLine(listEdges);
+			com.setTransition(transitions);
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -288,5 +259,9 @@ public class FileXML {
 		}
 		return true;
 	}
-	
+
+	@Override
+	public void addGraphComponent(GraphComponent com) {
+		this.com = com;
+	}
 }

@@ -8,4 +8,6 @@ public interface Transition<T>{
 	
 	public T label();
 	
+	public void setLabel(T label);
+	
 }

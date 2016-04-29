@@ -1,4 +1,4 @@
-package Part_1;
+package core;
 
 import javax.swing.JFrame;
 

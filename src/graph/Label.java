@@ -1,4 +1,4 @@
-package Part_1;
+package graph;
 
 import java.awt.Font;
 import java.awt.FontMetrics;

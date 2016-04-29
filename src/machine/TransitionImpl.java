@@ -28,6 +28,9 @@ public class TransitionImpl<T> implements Transition<T>{
 		return label;
 	}
 	
+	public void setLabel(T label){
+		this.label = label;
+	}
 	public void print(){
 		System.out.println("Source "+ source + ", target "+ target + ", Lable"+ label);
 	}

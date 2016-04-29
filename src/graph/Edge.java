@@ -1,4 +1,4 @@
-package Part_1;
+package graph;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -144,7 +144,7 @@ public class Edge{
 				fromPt.getY() + (toPt.getY() - fromPt.getY()) / 2);
 	}
 	
-	public void drawEdge(Graphics2D g2d, List<Part_1.Shape> states, Label labelFont, boolean selected){
+	public void drawEdge(Graphics2D g2d, List<graph.Shape> states, Label labelFont, boolean selected){
 		Point2D source = states.get(this.sourceParent).getPoint();
 		Point2D des = states.get(this.destinationParent).getPoint();
 		Point2D mid2SourceDes = midpoint(source, des);
@@ -232,8 +232,7 @@ public class Edge{
 		}
 	}
 	
-		
-	public void selected(Graphics2D g2d, List<Part_1.Shape> states){
+	public void selected(Graphics2D g2d, List<graph.Shape> states){
 		Point2D source = states.get(this.sourceParent).getPoint();
 		Point2D des = states.get(this.destinationParent).getPoint();
 		g2d.setColor(Color.YELLOW);

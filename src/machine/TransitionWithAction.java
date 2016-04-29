@@ -33,4 +33,10 @@ public class TransitionWithAction<T> implements Transition<T>{
 		return t.target();
 	}
 
+	@Override
+	public void setLabel(T label) {
+		t.setLabel(label);
+		
+	}
+
 }

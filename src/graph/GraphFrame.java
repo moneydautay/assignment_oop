@@ -1,4 +1,4 @@
-package Part_1;
+package graph;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -7,6 +7,9 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import core.FileXML;
+import core.FrameController;
 
 public class GraphFrame extends JFrame{
 
@@ -181,12 +184,8 @@ public class GraphFrame extends JFrame{
 
 					String fileTemp = fileChoise.getSelectedFile().toString();
 					PATH_FILE = !fileTemp.endsWith("xml") ? (fileTemp+".xml"): fileTemp;
-					file = new FileXML();
-					file.setListStates(com.getListPoints());
-					file.setListEdges(com.getListLine());
-					file.setStartState( com.getStartState());
-					file.setEndState( com.getEndState());
-					if(file.exportXml(PATH_FILE)){
+					file = new FileXMLImp(com);
+					if(file.exportXML(PATH_FILE)){
 						JOptionPane.showMessageDialog(GraphFrame.this, "Export message", "Export file success", JOptionPane.INFORMATION_MESSAGE);
 					}else{
 						JOptionPane.showMessageDialog(GraphFrame.this, "Export message", "Export file not success", JOptionPane.ERROR_MESSAGE);
@@ -207,16 +206,8 @@ public class GraphFrame extends JFrame{
 
 				if (fileChoise.showOpenDialog(GraphFrame.this) == JFileChooser.APPROVE_OPTION) {
 
-					file = new FileXML();
+					file = new FileXMLImp(com);
 					if (file.importXML(fileChoise.getSelectedFile().toString())) {
-
-						com.cleanGraph();
-						com.setStartState(file.getStartState());
-						com.setEndState(file.getEndState());
-						com.setListPoints(file.getListStates());
-						com.setListLine(file.getListEdges());
-						com.setTransition(file.getTransition());
-						
 						com.repaint();
 					}else{
 						JOptionPane.showMessageDialog(GraphFrame.this, "Import message", "Import file not success", JOptionPane.ERROR_MESSAGE);

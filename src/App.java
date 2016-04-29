@@ -1,11 +1,12 @@
-package Part_1;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
+
+import core.FrameController;
+import graph.GraphFrame;
 
 public class App implements FrameController{
 	

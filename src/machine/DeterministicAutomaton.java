@@ -7,10 +7,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import javax.swing.JComponent;
+
+import graph.GraphComponent;
+
 public class DeterministicAutomaton<T> {
 	
 	private State initialState = null;
-	
 	/*
 	 * In the map transitions, at each state s we associate a map m where the
 	 * values are the transitions having s as source and the corresponding key
@@ -19,6 +22,7 @@ public class DeterministicAutomaton<T> {
 	private final Map<State, Map<Object, Transition<T>>> transitions;
 	
 	public DeterministicAutomaton(ArrayList<Transition<T>> transitions) throws Exception {
+		
 		this.transitions = new HashMap<State, Map<Object, Transition<T>>>();
 		Iterator<T> iterTrans = (Iterator<T>) transitions.iterator();
 		while (iterTrans.hasNext()) {
@@ -29,14 +33,14 @@ public class DeterministicAutomaton<T> {
 			Map<Object, Transition<T>> map = this.transitions.get(t.source());
 		
 			if(map.containsKey(t.label())){ 
-				throw new NotDeterministTransitionException("Not Derterminist Transition");
+				throw new NotDeterministTransitionException(t, map.get(t.label()));
 			}
 										
 			map.put(t.label(), t);
 		}
 		
 		if(initialState == null){
-			throw new UnknownInitialStateException("Not Determinist Inital State");
+			throw new UnknownInitialStateException();
 		}
 	}
 
@@ -48,7 +52,7 @@ public class DeterministicAutomaton<T> {
 				if (initialState == null) {
 					initialState = s;
 				}else{
-					throw new NotDeterministInitalStateException("Not Determinist Inital State");
+					throw new NotDeterministInitialStateException(s, initialState);
 				}
 			}	
 		}
